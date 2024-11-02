@@ -224,19 +224,17 @@ public class RobotHardware extends LinearOpMode {
                 rightBackPower  /= max;
             }
 
-            /* Set the motor power to the variables we've mixed and normalized */
-            leftFrontDrive.setPower(leftFrontPower /2);
-            rightFrontDrive.setPower(rightFrontPower /2);
-            leftBackDrive.setPower(leftBackPower /2);
-            rightBackDrive.setPower(rightBackPower /2);
-
-
-
-            while (gamepad1.right_bumper);
-            leftFrontDrive.setPower(leftFrontPower *2);
-            rightFrontDrive.setPower(rightFrontPower *2);
-            leftBackDrive.setPower(leftBackPower *2);
-            rightBackDrive.setPower(rightBackPower *2);
+            if (gamepad1.right_bumper) {
+                leftFrontDrive.setPower(leftFrontPower *2);
+                rightFrontDrive.setPower(rightFrontPower *2);
+                leftBackDrive.setPower(leftBackPower *2);
+                rightBackDrive.setPower(rightBackPower *2);
+            } else {
+                leftFrontDrive.setPower(leftFrontPower /2);
+                rightFrontDrive.setPower(rightFrontPower /2);
+                leftBackDrive.setPower(leftBackPower /2);
+                rightBackDrive.setPower(rightBackPower /2);
+            }
 
 
 
