@@ -109,7 +109,7 @@ public class RobotHardware extends LinearOpMode {
     as far from the starting position, decrease it. */
 //
     final double ARM_COLLAPSED_INTO_ROBOT  = 5;
-    final double ARM_COLLECT               = 25 * ARM_TICKS_PER_DEGREE;
+    final double ARM_COLLECT               = 250 * ARM_TICKS_PER_DEGREE;
     final double ARM_CLEAR_BARRIER         = 230 * ARM_TICKS_PER_DEGREE;
     final double ARM_SCORE_SPECIMEN        = 160 * ARM_TICKS_PER_DEGREE;
     final double ARM_SCORE_SAMPLE_IN_LOW   = 160 * ARM_TICKS_PER_DEGREE;
@@ -225,12 +225,12 @@ public class RobotHardware extends LinearOpMode {
             }
 
             if (gamepad1.right_bumper) {
-                leftFrontDrive.setPower(leftFrontPower *2);
-                rightFrontDrive.setPower(rightFrontPower *2);
-                leftBackDrive.setPower(leftBackPower *2);
-                rightBackDrive.setPower(rightBackPower *2);
+                leftFrontDrive.setPower(leftFrontPower);
+                rightFrontDrive.setPower(rightFrontPower);
+                leftBackDrive.setPower(leftBackPower);
+                rightBackDrive.setPower(rightBackPower);
             } else {
-                leftFrontDrive.setPower(leftFrontPower /2);
+                leftFrontDrive.setPower(leftFrontPower/2);
                 rightFrontDrive.setPower(rightFrontPower /2);
                 leftBackDrive.setPower(leftBackPower /2);
                 rightBackDrive.setPower(rightBackPower /2);
@@ -254,6 +254,7 @@ public class RobotHardware extends LinearOpMode {
 
             if (gamepad2.a) {
                 intake.setPower(INTAKE_COLLECT);
+                wrist.setPosition(WRIST_FOLDED_OUT);
             }
             else if (gamepad2.x) {
                 intake.setPower(INTAKE_OFF);
@@ -296,7 +297,7 @@ public class RobotHardware extends LinearOpMode {
                     back to folded inside the robot. This is also the starting configuration */
                 armPosition = ARM_COLLAPSED_INTO_ROBOT;
                 intake.setPower(INTAKE_OFF);
-                wrist.setPosition(WRIST_FOLDED_IN);
+                wrist.setPosition(WRIST_FOLDED_OUT);
             }
 
             else if (gamepad2.dpad_right){

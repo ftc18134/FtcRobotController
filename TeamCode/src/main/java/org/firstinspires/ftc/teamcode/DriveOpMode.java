@@ -165,7 +165,7 @@ public class DriveOpMode extends LinearOpMode {
             telemetry.addData("Back  left/Right", "%4.2f, %4.2f", leftBackPower, rightBackPower);
             telemetry.update();
         while (gamepad1.right_bumper);
-            leftFrontDrive.setPower(leftFrontPower *2);
+        leftFrontDrive.setPower(leftFrontPower *2);
             rightFrontDrive.setPower(rightFrontPower *2);
             leftBackDrive.setPower(leftBackPower *2);
             rightBackDrive.setPower(rightBackPower *2);
