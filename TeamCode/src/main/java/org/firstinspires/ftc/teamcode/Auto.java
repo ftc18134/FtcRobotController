@@ -96,12 +96,12 @@ public class Auto extends LinearOpMode {
 
     @Override
     public void runOpMode() {
-        leftFrontDrive = hardwareMap.get(DcMotor.class, "frontLeftMotor");
-        leftBackDrive = hardwareMap.get(DcMotor.class, "backLeftMotor");
-        rightFrontDrive = hardwareMap.get(DcMotor.class, "frontRightMotor");
-        rightBackDrive = hardwareMap.get(DcMotor.class, "backRightMotor");
-        intake = hardwareMap.get(CRServo.class, "intake");
-        armMotor   = hardwareMap.get(DcMotor.class, "topArmfront");
+        leftFrontDrive = hardwareMap.get(DcMotor.class, "Front Left Wheel");
+        leftBackDrive = hardwareMap.get(DcMotor.class, "Back Left Wheel");
+        rightFrontDrive = hardwareMap.get(DcMotor.class, "Front Right Wheel");
+        rightBackDrive = hardwareMap.get(DcMotor.class, "Back Right Wheel");
+        intake = hardwareMap.get(CRServo.class, "Intake");
+        armMotor   = hardwareMap.get(DcMotor.class, "Arm");
 
         leftFrontDrive.setDirection(DcMotor.Direction.REVERSE);
         leftBackDrive.setDirection(DcMotor.Direction.REVERSE);
