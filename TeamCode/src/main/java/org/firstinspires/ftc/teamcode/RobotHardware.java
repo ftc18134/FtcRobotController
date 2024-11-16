@@ -72,13 +72,13 @@ import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 public class RobotHardware extends LinearOpMode {
 
     /* Declare OpMode members. */
-    public DcMotor leftFrontDrive = null;
-    public DcMotor leftBackDrive = null;
+    public DcMotor leftFrontDrive  = null;
+    public DcMotor leftBackDrive   = null;
     public DcMotor rightFrontDrive = null;
-    public DcMotor rightBackDrive = null;
-    public DcMotor  armMotor    = null; //the arm motor
-    public CRServo  intake      = null; //the active intake servo
-    public Servo    wrist       = null; //the wrist servo
+    public DcMotor rightBackDrive  = null;
+    public DcMotor armMotor        = null; //the arm motor
+    public CRServo intake          = null; //the active intake servo
+    public Servo   wrist           = null; //the wrist servo
 
 
     /* This constant is the number of encoder ticks for each degree of rotation of the arm.
@@ -125,13 +125,15 @@ public class RobotHardware extends LinearOpMode {
     final double WRIST_FOLDED_IN   = 0.8333;
     final double WRIST_FOLDED_OUT  = 0.5;
 
-    /* A number in degrees that the triggers can adjust the arm position by */
+    /* A number in degrees that the triggers (now it is the gamepad right stick) can adjust the arm position by */
     final double FUDGE_FACTOR = 15 * ARM_TICKS_PER_DEGREE;
 
     /* Variables that are used to set the arm to a specific position */
     double armPosition = (int)ARM_COLLAPSED_INTO_ROBOT;
     double armPositionFudgeFactor;
 
+    /* the threshold that must be passed for a trigger press to resgister */
+    final double TRIGGER_THRESHOLD = 0.75;
 
     @Override
     public void runOpMode() {
@@ -143,10 +145,10 @@ public class RobotHardware extends LinearOpMode {
 
         /* Define and Initialize Motors */
         leftFrontDrive  = hardwareMap.get(DcMotor.class, "Front Left Wheel");
-        leftBackDrive  = hardwareMap.get(DcMotor.class, "Back Left Wheel");
+        leftBackDrive   = hardwareMap.get(DcMotor.class, "Back Left Wheel");
         rightFrontDrive = hardwareMap.get(DcMotor.class, "Front Right Wheel");
-        rightBackDrive = hardwareMap.get(DcMotor.class, "Back Right Wheel");
-        armMotor   = hardwareMap.get(DcMotor.class, "Arm"); //the arm motor
+        rightBackDrive  = hardwareMap.get(DcMotor.class, "Back Right Wheel");
+        armMotor        = hardwareMap.get(DcMotor.class, "Arm"); //the arm motor
 
 
         /* Most skid-steer/differential drive robots require reversing one motor to drive forward.
@@ -238,12 +240,6 @@ public class RobotHardware extends LinearOpMode {
 
 
 
-            /* Here we handle the three buttons that have direct control of the intake speed.
-            These control the continuous rotation servo that pulls elements into the robot,
-            If the user presses A, it sets the intake power to the final variable that
-            holds the speed we want to collect at.
-            If the user presses X, it sets the servo to Off.
-            And if the user presses B it reveres the servo to spit out the element.*/
 
             /* TECH TIP: If Else statements:
             We're using an else if statement on "gamepad1.x" and "gamepad1.b" just in case
@@ -252,14 +248,32 @@ public class RobotHardware extends LinearOpMode {
             three if statements, then it will set the intake servo's power to multiple speeds in
             one cycle. Which can cause strange behavior. */
 
+
+            /*--------------------------------!!!IMPORTANT!!!---------------------------------------
+                                  !!!game pad mapping for game pad 2!!!
+            a = set intake to collect
+            b = turn off intake
+            x = set intake to deposit
+            y = turns off and folds in arm (into robot), wrist, and intake
+
+            RB = arm collect w/ wrist folded out
+            LB = arm clear submersible's barrier wall
+            dpad left = fold wrist in
+            dpad right = fold wrist out
+            dpad up = set arm to hook onto low bar
+            dpad down = raise robot once it is hooked on the bar
+            RT = moves arm to score in low basket
+            LT = moves arm to score in HIGH basket or hook specimen?
+             */
+
             if (gamepad2.a) {
                 intake.setPower(INTAKE_COLLECT);
-                wrist.setPosition(WRIST_FOLDED_OUT);
-            }
-            else if (gamepad2.x) {
-                intake.setPower(INTAKE_OFF);
+                //wrist.setPosition(WRIST_FOLDED_OUT);
             }
             else if (gamepad2.b) {
+                intake.setPower(INTAKE_OFF);
+            }
+            else if (gamepad2.x) {
                 intake.setPower(INTAKE_DEPOSIT);
             }
 
@@ -276,7 +290,6 @@ public class RobotHardware extends LinearOpMode {
                 /* This is the intaking/collecting arm position */
                 armPosition = ARM_COLLECT;
                 wrist.setPosition(WRIST_FOLDED_OUT);
-                intake.setPower(INTAKE_COLLECT);
             }
 
             else if (gamepad2.left_bumper){
@@ -287,23 +300,22 @@ public class RobotHardware extends LinearOpMode {
                 armPosition = ARM_CLEAR_BARRIER;
             }
 
+
             else if (gamepad2.y){
-                /* This is the correct height to score the sample in the LOW BASKET */
-                armPosition = ARM_SCORE_SAMPLE_IN_LOW;
+                /* this sets the arm and wrist to fold in as needed and turns off the intake */
+                armPosition = ARM_COLLAPSED_INTO_ROBOT;
+                wrist.setPosition(WRIST_FOLDED_IN);
+                intake.setPower(INTAKE_OFF);
             }
 
             else if (gamepad2.dpad_left) {
                     /* This turns off the intake, folds in the wrist, and moves the arm
                     back to folded inside the robot. This is also the starting configuration */
-                armPosition = ARM_COLLAPSED_INTO_ROBOT;
-                intake.setPower(INTAKE_OFF);
-                wrist.setPosition(WRIST_FOLDED_OUT);
+                wrist.setPosition(WRIST_FOLDED_IN);
             }
 
             else if (gamepad2.dpad_right){
-                /* This is the correct height to score SPECIMEN on the HIGH CHAMBER */
-                armPosition = ARM_SCORE_SPECIMEN;
-                wrist.setPosition(WRIST_FOLDED_IN);
+                wrist.setPosition(WRIST_FOLDED_OUT); //some one set it to WRIST_FOLDED_IN wtf
             }
 
             else if (gamepad2.dpad_up){
@@ -312,13 +324,29 @@ public class RobotHardware extends LinearOpMode {
                 intake.setPower(INTAKE_OFF);
                 wrist.setPosition(WRIST_FOLDED_IN);
             }
-
             else if (gamepad2.dpad_down){
                 /* this moves the arm down to lift the robot up once it has been hooked */
                 armPosition = ARM_WINCH_ROBOT;
                 intake.setPower(INTAKE_OFF);
                 wrist.setPosition(WRIST_FOLDED_IN);
             }
+
+            else if (gamepad2.right_trigger > TRIGGER_THRESHOLD) {
+                //sets to score in LOW basket
+                armPosition =  ARM_SCORE_SAMPLE_IN_LOW;
+                wrist.setPosition(WRIST_FOLDED_OUT);
+            }
+
+           /* else if (gamepad2.left_trigger > TRIGGER_THRESHOLD) {
+                //sets position to score in HIGH basket??
+                armPosition = ARM_SCORE_SPECIMEN;
+                wrist.setPosition(WRIST_FOLDED_OUT);
+            } */
+
+            /*
+
+             */
+
 
 
             /* Here we create a "fudge factor" for the arm position.
@@ -327,9 +355,15 @@ public class RobotHardware extends LinearOpMode {
             So we add the right trigger's variable to the inverse of the left trigger. If you pull
             both triggers an equal amount, they cancel and leave the arm at zero. But if one is larger
             than the other, it "wins out". This variable is then multiplied by our FUDGE_FACTOR.
-            The FUDGE_FACTOR is the number of degrees that we can adjust the arm by with this function. */
+            The FUDGE_FACTOR is the number of degrees that we can adjust the arm by with this function.
 
-            armPositionFudgeFactor = FUDGE_FACTOR * (gamepad2.right_trigger + (-gamepad2.left_trigger));
+            note from emre: I changed it from the LT an RT to just the right stick forward and back
+            value to negate conflict with the use of the triggers to put the arm in scoring position.
+
+            */
+
+            //armPositionFudgeFactor = FUDGE_FACTOR * (gamepad2.right_trigger + (-gamepad2.left_trigger));
+            armPositionFudgeFactor = FUDGE_FACTOR * (gamepad2.right_stick_y);
 
 
             /* Here we set the target position of our arm to match the variable that was selected
