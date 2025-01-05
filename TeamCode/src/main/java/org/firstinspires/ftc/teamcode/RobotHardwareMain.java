@@ -295,7 +295,7 @@ public class RobotHardwareMain extends LinearOpMode {
                     /* This is about 20° up from the collecting position to clear the barrier
                     Note here that we don't set the wrist position or the intake power when we
                     select this "mode", this means that the intake and wrist will continue what
-                    they were doing before we clicked left bumper. */
+                    they were doing before we clicked left bumper.  assfdghf*/
                 armPosition = ARM_CLEAR_BARRIER;
             }
 
