@@ -98,7 +98,7 @@ public class RobotHardwareMain extends LinearOpMode {
 
     /* These constants hold the position that the arm is commanded to run to.
     These are relative to where the arm was located when you start the OpMode. So make sure the
-    arm is reset to collapsed inside the robot before you start the program.
+    arm is reset to collapsed inside the robot before you start the program. this change needed to be added
 
     In these variables you'll see a number in degrees, multiplied by the ticks per degree of the arm.
     This results in the number of encoder ticks the arm needs to move in order to achieve the ideal
