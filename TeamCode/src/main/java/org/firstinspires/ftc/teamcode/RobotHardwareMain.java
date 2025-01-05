@@ -28,7 +28,6 @@ import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 
@@ -67,9 +66,9 @@ import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
  */
 
 
-@TeleOp(name="Robot Hardware", group="Robot")
+@TeleOp(name="Robot Hardware Main", group="Robot")
 //@Disabled
-public class RobotHardware extends LinearOpMode {
+public class RobotHardwareMain extends LinearOpMode {
 
     /* Declare OpMode members. */
     public DcMotor leftFrontDrive  = null;
