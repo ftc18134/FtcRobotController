@@ -93,7 +93,7 @@ public class RobotHardwareMain extends LinearOpMode {
             28 // number of encoder ticks per rotation of the bare motor
                     * 250047.0 / 4913.0 // This is the exact gear ratio of the 50.9:1 Yellow Jacket gearbox
                     * 100.0 / 20.0 // This is the external gear reduction, a 20T pinion gear that drives a 100T hub-mount gear
-                    * 1/360.0; // we want ticks per degree, not per rotation   ssdfsfsf
+                    * 1/360.0; // we want ticks per degree, not per rotation
 
 
     /* These constants hold the position that the arm is commanded to run to.
