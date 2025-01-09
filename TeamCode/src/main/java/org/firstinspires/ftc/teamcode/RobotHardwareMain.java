@@ -90,7 +90,7 @@ public class RobotHardwareMain extends LinearOpMode {
     reduction of ~50.9:1. (more precisely it is 250047/4913:1)
     We can multiply these two ratios together to get our final reduction of ~254.47:1.
     The motor's encoder counts 28 times per rotation. So in total you should see about 7125.16
-    counts per rotation of the arm. We divide that by 360 to get the counts per degree. */
+    counts per rotation of the arm. We divide that by 360 to get the counts per degree. kjkjkjhkjgk*/
     final double ARM_TICKS_PER_DEGREE =
             28 // number of encoder ticks per rotation of the bare motor
                     * 250047.0 / 4913.0 // This is the exact gear ratio of the 50.9:1 Yellow Jacket gearbox
@@ -297,7 +297,7 @@ public class RobotHardwareMain extends LinearOpMode {
                     /* This is about 20° up from the collecting position to clear the barrier
                     Note here that we don't set the wrist position or the intake power when we
                     select this "mode", this means that the intake and wrist will continue what
-                    they were doing before we clicked left bumper. */
+                    they were doing before we clicked left bumper.  assfdghf*/
                 armPosition = ARM_CLEAR_BARRIER;
             }
 
