@@ -24,9 +24,9 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
@@ -76,8 +76,10 @@ public class RobotHardwareMain extends LinearOpMode {
     public DcMotor rightFrontDrive = null;
     public DcMotor rightBackDrive  = null;
     public DcMotor armMotor        = null; //the arm motor
-    public CRServo intake          = null; //the active intake servo
-    public Servo   wrist           = null; //the wrist servo
+    public DcMotor extensionArm    = null; //the arm extension motor
+    public Servo   intake          = null; //the active intake servo
+
+
 
 
     /* This constant is the number of encoder ticks for each degree of rotation of the arm.
@@ -93,12 +95,12 @@ public class RobotHardwareMain extends LinearOpMode {
             28 // number of encoder ticks per rotation of the bare motor
                     * 250047.0 / 4913.0 // This is the exact gear ratio of the 50.9:1 Yellow Jacket gearbox
                     * 100.0 / 20.0 // This is the external gear reduction, a 20T pinion gear that drives a 100T hub-mount gear
-                    * 1/360.0; // we want ticks per degree, not per rotation nhjhkghihgkjgjhig
+                    * 1/360.0; // we want ticks per degree, not per rotation
 
 
     /* These constants hold the position that the arm is commanded to run to.
     These are relative to where the arm was located when you start the OpMode. So make sure the
-    arm is reset to collapsed inside the robot before you start the program. this change needed to be added
+    arm is reset to collapsed inside the robot before you start the program.
 
     In these variables you'll see a number in degrees, multiplied by the ticks per degree of the arm.
     This results in the number of encoder ticks the arm needs to move in order to achieve the ideal
@@ -110,10 +112,11 @@ public class RobotHardwareMain extends LinearOpMode {
     final double ARM_COLLAPSED_INTO_ROBOT  = 5;
     final double ARM_COLLECT               = 250 * ARM_TICKS_PER_DEGREE;
     final double ARM_CLEAR_BARRIER         = 230 * ARM_TICKS_PER_DEGREE;
-    final double ARM_SCORE_SPECIMEN        = 160 * ARM_TICKS_PER_DEGREE;
     final double ARM_SCORE_SAMPLE_IN_LOW   = 160 * ARM_TICKS_PER_DEGREE;
     final double ARM_ATTACH_HANGING_HOOK   = 120 * ARM_TICKS_PER_DEGREE;
     final double ARM_WINCH_ROBOT           = 15  * ARM_TICKS_PER_DEGREE;
+
+
 
     /* Variables to store the speed the intake servo should be set at to intake, and deposit game elements. */
     final double INTAKE_COLLECT    = -1.0;
@@ -121,8 +124,6 @@ public class RobotHardwareMain extends LinearOpMode {
     final double INTAKE_DEPOSIT    =  0.5;
 
     /* Variables to store the positions that the wrist should be set to when folding in, or folding out. */
-    final double WRIST_FOLDED_IN   = 0.8333;
-    final double WRIST_FOLDED_OUT  = 0.5;
 
     /* A number in degrees that the triggers (now it is the gamepad right stick) can adjust the arm position by */
     final double FUDGE_FACTOR = 15 * ARM_TICKS_PER_DEGREE;
@@ -142,12 +143,14 @@ public class RobotHardwareMain extends LinearOpMode {
 
 
 
-        /* Define and Initialize Motors */
+        /* Define and Initialize Motors and Servos */
         leftFrontDrive  = hardwareMap.get(DcMotor.class, "Front Left Wheel");
         leftBackDrive   = hardwareMap.get(DcMotor.class, "Back Left Wheel");
         rightFrontDrive = hardwareMap.get(DcMotor.class, "Front Right Wheel");
         rightBackDrive  = hardwareMap.get(DcMotor.class, "Back Right Wheel");
         armMotor        = hardwareMap.get(DcMotor.class, "Arm"); //the arm motor
+        extensionArm    = hardwareMap.get(DcMotor.class, "Extension"); // the arm extension motor
+        intake          = hardwareMap.get(Servo.class, "Claw");//the intake
 
 
         /* Most skid-steer/differential drive robots require reversing one motor to drive forward.
@@ -176,13 +179,11 @@ public class RobotHardwareMain extends LinearOpMode {
         armMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
 
-        /* Define and initialize servos.*/
-        intake = hardwareMap.get(CRServo.class, "Intake");
-        wrist  = hardwareMap.get(Servo.class, "Wrist");
 
-        /* Make sure that the intake is off, and the wrist is folded in. */
-        intake.setPower(INTAKE_OFF);
-        wrist.setPosition(WRIST_FOLDED_IN);
+
+        /* Make sure that the intake is off */
+        intake.setPosition(INTAKE_OFF);
+
 
         /* Send telemetry message to signify robot waiting */
         telemetry.addLine("Robot Ready.");
@@ -251,14 +252,14 @@ public class RobotHardwareMain extends LinearOpMode {
             /*--------------------------------!!!IMPORTANT!!!---------------------------------------
                                   !!!game pad mapping for game pad 2!!!
             a = set intake to collect
-            b = turn off intake
-            x = set intake to deposit
-            y = turns off and folds in arm (into robot), wrist, and intake
+            x = turn off intake
+            b = set intake to deposit
+            y = not mapped to anything
 
             RB = arm collect w/ wrist folded out
             LB = arm clear submersible's barrier wall
-            dpad left = fold wrist in
-            dpad right = fold wrist out
+            dpad left = not mapped to anything
+            dpad right = not mapped to anything
             dpad up = set arm to hook onto low bar
             dpad down = raise robot once it is hooked on the bar
             RT = moves arm to score in low basket
@@ -266,14 +267,15 @@ public class RobotHardwareMain extends LinearOpMode {
              */
 
             if (gamepad2.a) {
-                intake.setPower(INTAKE_COLLECT);
-                //wrist.setPosition(WRIST_FOLDED_OUT);
-            }
-            else if (gamepad2.b) {
-                intake.setPower(INTAKE_OFF);
+                intake.setPosition(INTAKE_COLLECT);
+
             }
             else if (gamepad2.x) {
-                intake.setPower(INTAKE_DEPOSIT);
+                intake.setPosition(INTAKE_OFF);
+
+            }
+            else if (gamepad2.b) {
+                intake.setPosition(INTAKE_DEPOSIT);
             }
 
 
@@ -288,7 +290,7 @@ public class RobotHardwareMain extends LinearOpMode {
             if(gamepad2.right_bumper){
                 /* This is the intaking/collecting arm position */
                 armPosition = ARM_COLLECT;
-                wrist.setPosition(WRIST_FOLDED_OUT);
+
             }
 
             else if (gamepad2.left_bumper){
@@ -300,51 +302,31 @@ public class RobotHardwareMain extends LinearOpMode {
             }
 
 
-            else if (gamepad2.y){
-                /* this sets the arm and wrist to fold in as needed and turns off the intake */
-                armPosition = ARM_COLLAPSED_INTO_ROBOT;
-                wrist.setPosition(WRIST_FOLDED_IN);
-                intake.setPower(INTAKE_OFF);
-            }
-
-            else if (gamepad2.dpad_left) {
-                    /* This turns off the intake, folds in the wrist, and moves the arm
-                    back to folded inside the robot. This is also the starting configuration */
-                wrist.setPosition(WRIST_FOLDED_IN);
-            }
-
-            else if (gamepad2.dpad_right){
-                wrist.setPosition(WRIST_FOLDED_OUT); //some one set it to WRIST_FOLDED_IN wtf
-            }
 
             else if (gamepad2.dpad_up){
                 /* This sets the arm to vertical to hook onto the LOW RUNG for hanging */
                 armPosition = ARM_ATTACH_HANGING_HOOK;
-                intake.setPower(INTAKE_OFF);
-                wrist.setPosition(WRIST_FOLDED_IN);
+                intake.setPosition(INTAKE_OFF);
+
             }
             else if (gamepad2.dpad_down){
                 /* this moves the arm down to lift the robot up once it has been hooked */
                 armPosition = ARM_WINCH_ROBOT;
-                intake.setPower(INTAKE_OFF);
-                wrist.setPosition(WRIST_FOLDED_IN);
+                intake.setPosition(INTAKE_OFF);
+
             }
 
             else if (gamepad2.right_trigger > TRIGGER_THRESHOLD) {
-                //sets to score in LOW basket
-                armPosition =  ARM_SCORE_SAMPLE_IN_LOW;
-                wrist.setPosition(WRIST_FOLDED_OUT);
+                //Moves extension arm forwards
+                extensionArm.setDirection(DcMotor.Direction.FORWARD);
+                extensionArm.setPower(1);
+            }
+            else if (gamepad2.left_trigger > TRIGGER_THRESHOLD) {
+                //Moves extension arm backwards
+                extensionArm.setDirection(DcMotor.Direction.REVERSE);
+                extensionArm.setPower(1);
             }
 
-           /* else if (gamepad2.left_trigger > TRIGGER_THRESHOLD) {
-                //sets position to score in HIGH basket??
-                armPosition = ARM_SCORE_SPECIMEN;
-                wrist.setPosition(WRIST_FOLDED_OUT);
-            } */
-
-            /*
-
-             */
 
 
 
