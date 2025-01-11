@@ -91,11 +91,6 @@ public class RobotHardwareMain extends LinearOpMode {
     We can multiply these two ratios together to get our final reduction of ~254.47:1.
     The motor's encoder counts 28 times per rotation. So in total you should see about 7125.16
     counts per rotation of the arm. We divide that by 360 to get the counts per degree. kjkjkjhkjgk*/
-    final double ARM_TICKS_PER_DEGREE =
-            28 // number of encoder ticks per rotation of the bare motor
-                    * 250047.0 / 4913.0 // This is the exact gear ratio of the 50.9:1 Yellow Jacket gearbox
-                    * 100.0 / 20.0 // This is the external gear reduction, a 20T pinion gear that drives a 100T hub-mount gear
-                    * 1/360.0; // we want ticks per degree, not per rotation
 
 
     /* These constants hold the position that the arm is commanded to run to.
@@ -108,15 +103,9 @@ public class RobotHardwareMain extends LinearOpMode {
     160 * ARM_TICKS_PER_DEGREE. This asks the arm to move 160° from the starting position.
     If you'd like it to move further, increase that number. If you'd like it to not move
     as far from the starting position, decrease it. */
-//
-    final double ARM_COLLAPSED_INTO_ROBOT  = 5;
-    final double ARM_COLLECT               = 250 * ARM_TICKS_PER_DEGREE;
-    final double ARM_CLEAR_BARRIER         = 230 * ARM_TICKS_PER_DEGREE;
-    final double ARM_SCORE_SAMPLE_IN_LOW   = 160 * ARM_TICKS_PER_DEGREE;
-    final double ARM_ATTACH_HANGING_HOOK   = 120 * ARM_TICKS_PER_DEGREE;
-    final double ARM_WINCH_ROBOT           = 15  * ARM_TICKS_PER_DEGREE;
 
 
+    /*
 
     /* Variables to store the speed the intake servo should be set at to intake, and deposit game elements. */
     final double INTAKE_COLLECT    = -1.0;
@@ -126,14 +115,10 @@ public class RobotHardwareMain extends LinearOpMode {
     /* Variables to store the positions that the wrist should be set to when folding in, or folding out. */
 
     /* A number in degrees that the triggers (now it is the gamepad right stick) can adjust the arm position by */
-    final double FUDGE_FACTOR = 15 * ARM_TICKS_PER_DEGREE;
-
-    /* Variables that are used to set the arm to a specific position */
-    double armPosition = (int)ARM_COLLAPSED_INTO_ROBOT;
-    double armPositionFudgeFactor;
-
-    /* the threshold that must be passed for a trigger press to resgister */
     final double TRIGGER_THRESHOLD = 0.75;
+
+    /* the threshold that must be passed for a trigger press to register */
+
 
     @Override
     public void runOpMode() {
@@ -165,18 +150,19 @@ public class RobotHardwareMain extends LinearOpMode {
         much faster when it is coasting. This creates a much more controllable drivetrain. As the robot
         stops much quicker. */
 
-        armMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+
 
         /*This sets the maximum current that the control hub will apply to the arm before throwing a flag */
-        ((DcMotorEx) armMotor).setCurrentAlert(5,CurrentUnit.AMPS);
+       // ((DcMotorEx) armMotor).setCurrentAlert(5,CurrentUnit.AMPS);
 
 
         /* Before starting the armMotor. We'll make sure the TargetPosition is set to 0.
         Then we'll set the RunMode to RUN_TO_POSITION. And we'll ask it to stop and reset encoder.
         If you do not have the encoder plugged into this motor, it will not run in this code. */
-        armMotor.setTargetPosition(0);
-        armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        armMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        //armMotor.setTargetPosition(0);
+        //armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        //armMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
 
 
@@ -289,7 +275,7 @@ public class RobotHardwareMain extends LinearOpMode {
 
             if(gamepad2.right_bumper){
                 /* This is the intaking/collecting arm position */
-                armPosition = ARM_COLLECT;
+                //armPosition = ARM_COLLECT;
 
             }
 
@@ -298,34 +284,43 @@ public class RobotHardwareMain extends LinearOpMode {
                     Note here that we don't set the wrist position or the intake power when we
                     select this "mode", this means that the intake and wrist will continue what
                     they were doing before we clicked left bumper.  assfdghf*/
-                armPosition = ARM_CLEAR_BARRIER;
+                //armPosition = ARM_CLEAR_BARRIER;
             }
 
 
 
-            else if (gamepad2.dpad_up){
-                /* This sets the arm to vertical to hook onto the LOW RUNG for hanging */
-                armPosition = ARM_ATTACH_HANGING_HOOK;
-                intake.setPosition(INTAKE_OFF);
 
-            }
-            else if (gamepad2.dpad_down){
-                /* this moves the arm down to lift the robot up once it has been hooked */
-                armPosition = ARM_WINCH_ROBOT;
-                intake.setPosition(INTAKE_OFF);
 
-            }
 
             else if (gamepad2.right_trigger > TRIGGER_THRESHOLD) {
                 //Moves extension arm forwards
-                extensionArm.setDirection(DcMotor.Direction.FORWARD);
-                extensionArm.setPower(1);
+                extensionArm.setDirection(DcMotor.Direction.REVERSE);
+                extensionArm.setPower(0.3);
             }
             else if (gamepad2.left_trigger > TRIGGER_THRESHOLD) {
                 //Moves extension arm backwards
-                extensionArm.setDirection(DcMotor.Direction.REVERSE);
-                extensionArm.setPower(1);
+                extensionArm.setDirection(DcMotor.Direction.FORWARD);
+                extensionArm.setPower(0.4);
             }
+            else if (gamepad2.dpad_left) {
+                extensionArm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+                extensionArm.setPower(0);
+            }
+            else if (gamepad2.dpad_up) {
+                //Moves extension arm forwards
+                armMotor.setDirection(DcMotor.Direction.REVERSE);
+                armMotor.setPower(0.3);
+            }
+            else if (gamepad2.dpad_down) {
+                //Moves extension arm backwards
+                armMotor.setPower(0.4);
+                armMotor.setDirection(DcMotor.Direction.FORWARD);
+            }
+            else if (gamepad2.dpad_right) {
+                armMotor.setPower(0);
+                armMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+            }
+
 
 
 
@@ -344,16 +339,16 @@ public class RobotHardwareMain extends LinearOpMode {
             */
 
             //armPositionFudgeFactor = FUDGE_FACTOR * (gamepad2.right_trigger + (-gamepad2.left_trigger));
-            armPositionFudgeFactor = FUDGE_FACTOR * (gamepad2.right_stick_y);
+            //armPositionFudgeFactor = FUDGE_FACTOR * (gamepad2.right_stick_y);
 
 
             /* Here we set the target position of our arm to match the variable that was selected
             by the driver.
             We also set the target velocity (speed) the motor runs at, and use setMode to run it.*/
-            armMotor.setTargetPosition((int) (armPosition + armPositionFudgeFactor));
+            //armMotor.setTargetPosition((int) (armPosition + armPositionFudgeFactor));
 
-            ((DcMotorEx) armMotor).setVelocity(2100);
-            armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            //((DcMotorEx) armMotor).setVelocity(2100);
+            //armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
             /* TECH TIP: Encoders, integers, and doubles
             Encoders report when the motor has moved a specified angle. They send out pulses which
@@ -376,17 +371,16 @@ public class RobotHardwareMain extends LinearOpMode {
             */
 
             /* Check to see if our arm is over the current limit, and report via telemetry. */
-            if (((DcMotorEx) armMotor).isOverCurrent()){
+            //if (((DcMotorEx) armMotor).isOverCurrent()){
                 telemetry.addLine("MOTOR EXCEEDED CURRENT LIMIT!");
             }
 
 
             /* send telemetry to the driver of the arm's current position and target position */
-            telemetry.addData("armTarget: ", armMotor.getTargetPosition());
-            telemetry.addData("arm Encoder: ", armMotor.getCurrentPosition());
+           // telemetry.addData("armTarget: ", armMotor.getTargetPosition());
+            //telemetry.addData("arm Encoder: ", armMotor.getCurrentPosition());
             telemetry.update();
 
 
         }
     }
-}

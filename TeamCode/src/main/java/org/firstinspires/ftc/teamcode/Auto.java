@@ -27,14 +27,7 @@ public class Auto extends LinearOpMode {
 
     final double INTAKE_DEPOSIT    =  0.5;
 
-    final double ARM_TICKS_PER_DEGREE =
-            28 // number of encoder ticks per rotation of the bare motor
-                    * 250047.0 / 4913.0 // This is the exact gear ratio of the 50.9:1 Yellow Jacket gearbox
-                    * 100.0 / 20.0 // This is the external gear reduction, a 20T pinion gear that drives a 100T hub-mount gear
-                    * 1/360.0; // we want ticks per degree, not per rotation
 
-    //Should test
-    final double ARM_SCORE         = 230 * ARM_TICKS_PER_DEGREE;
 
     public void drive(double axial, double lateral, double yaw, double seconds) {
         double max;
@@ -118,7 +111,6 @@ public class Auto extends LinearOpMode {
         runtime.reset();
 
         //Step 1: move arm
-        armMotor.setTargetPosition((int) ARM_SCORE);
         ((DcMotorEx) armMotor).setVelocity(2100);
         armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
