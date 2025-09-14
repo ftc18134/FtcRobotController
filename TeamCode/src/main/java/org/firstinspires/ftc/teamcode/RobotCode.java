@@ -83,11 +83,6 @@ public class RobotCode extends LinearOpMode {
     final double INTAKE_OFF = 0.0;
     final double INTAKE_DEPOSIT = 0.5;
 
-    final double EXTENSION_DOWN_POWER = 0.4;
-    final double EXTENSION_UP_POWER = 0.3;
-
-    final double ARM_UP_POWER = 0.3;
-    final double ARM_DOWN_POWER = 0.4;
 
     @Override
     public void runOpMode() {
@@ -150,15 +145,16 @@ public class RobotCode extends LinearOpMode {
                 rightBackDrive.setPower(rightBackPower / 2);
 
 
+
                 if (gamepad2.right_trigger > TRIGGER_THRESHOLD) {
                     //Moves extension arm forwards
                     extensionArm.setDirection(DcMotor.Direction.FORWARD);
-                    extensionArm.setPower(EXTENSION_UP_POWER);
+                    extensionArm.setPower(0.3);
 
                 } else if (gamepad2.left_trigger > TRIGGER_THRESHOLD) {
                     //Moves extension arm backwards
                     extensionArm.setDirection(DcMotor.Direction.REVERSE);
-                    extensionArm.setPower(EXTENSION_DOWN_POWER);
+                    extensionArm.setPower(0.4);
 
                 } else if (gamepad2.left_bumper) {
                     //stops extension arm from moving
@@ -168,11 +164,11 @@ public class RobotCode extends LinearOpMode {
                 } else if (gamepad2.dpad_up) {
                     //Moves arm forwards
                     armMotor.setDirection(DcMotor.Direction.FORWARD);
-                    armMotor.setPower(ARM_UP_POWER);
+                    armMotor.setPower(0.3);
 
                 } else if (gamepad2.dpad_down) {
                     //Moves arm backwards
-                    armMotor.setPower(ARM_DOWN_POWER);
+                    armMotor.setPower(0.4);
                     armMotor.setDirection(DcMotor.Direction.REVERSE);
 
                 } else if (gamepad2.dpad_right) {
@@ -205,13 +201,6 @@ public class RobotCode extends LinearOpMode {
                     rightFrontDrive.setPower(rightFrontPower * 2);
                     leftBackDrive.setPower(leftBackPower * 2);
                     rightBackDrive.setPower(rightBackPower * 2);
-                }
-
-                while (gamepad2.right_bumper) {
-                    extensionArm.setPower(EXTENSION_UP_POWER / 2);
-                    extensionArm.setPower(EXTENSION_DOWN_POWER / 2);
-                    armMotor.setPower(ARM_DOWN_POWER / 2);
-                    armMotor.setPower(ARM_UP_POWER / 2);
                 }
 
             }

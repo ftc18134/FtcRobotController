@@ -4,88 +4,29 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+//Port 0 had arm motor
+//port 1 is extension
 @Autonomous(name="Robot: Auto", group="Robot")
 public class Auto extends LinearOpMode {
 
     /* Declare OpMode members. */
     public DcMotor  armMotor    = null;
-    public CRServo intake      = null;
+    public CRServo intake       = null;
+    public DcMotor extensionArm = null;
 
 
-    private ElapsedTime runtime = new ElapsedTime();
-    private DcMotor leftFrontDrive = null;
-    private DcMotor leftBackDrive = null;
-    private DcMotor rightFrontDrive = null;
-    private DcMotor rightBackDrive = null;
+    public ElapsedTime runtime      = new ElapsedTime();
+    public DcMotor leftFrontDrive   = null;
+    public DcMotor leftBackDrive    = null;
+    public DcMotor rightFrontDrive  = null;
+    public DcMotor rightBackDrive   = null;
 
     static final double     FORWARD_SPEED = 0.6;
-    static final double     TURN_SPEED    = 0.5;
-
-    final double INTAKE_DEPOSIT    =  0.5;
-
-
-
-    public void drive(double axial, double lateral, double yaw, double seconds) {
-        double max;
-
-        double leftFrontPower  = axial + lateral + yaw;
-        double rightFrontPower = axial - lateral - yaw;
-        double leftBackPower   = axial - lateral + yaw;
-        double rightBackPower  = axial + lateral - yaw;
-        ElapsedTime timer = new ElapsedTime();
-
-        // Normalize the values so no wheel power exceeds 100%
-        // This ensures that the robot maintains the desired motion.
-        max = Math.max(Math.abs(leftFrontPower), Math.abs(rightFrontPower));
-        max = Math.max(max, Math.abs(leftBackPower));
-        max = Math.max(max, Math.abs(rightBackPower));
-
-        if (max > 1.0) {
-            leftFrontPower  /= max;
-            rightFrontPower /= max;
-            leftBackPower   /= max;
-            rightBackPower  /= max;
-        }
-
-        // Send calculated power to wheels
-        while (timer.seconds() <= seconds) {
-            leftFrontDrive.setPower(leftFrontPower/2);
-            rightFrontDrive.setPower(rightFrontPower/2);
-            leftBackDrive.setPower(leftBackPower/2);
-            rightBackDrive.setPower(rightBackPower/2);
-        }
-    }
-    public void stopDrive() {
-        leftFrontDrive.setPower(0);
-        rightFrontDrive.setPower(0);
-        leftBackDrive.setPower(0);
-        rightBackDrive.setPower(0);
-    }
-
-    public void score() {
-        intake.setPower(INTAKE_DEPOSIT);
-    }
-
-    /* Begin with one game piece inside the claw and the back right corner touching the end of the
-    tape of the net zone. The arm and intake should be facing away from the net zone.
-
-    *Hypothetically*, this should work, but I didn't have the robot with me while writing this so
-    no guarantees.
-
-    When testing auto, remember to always BE VERY VERY CAREFUL because a) the robot will be moving
-    on its own and b) you do not necessarily know if it's going to work the way you want it to (as
-    in, it may go a very wrong direction at a very fast speed and lead to unfortunate results). Keep
-    someone's hand over the pause button at all times and be ready to press it if needed.
-
-    You may need to mess with the power levels and their signs (I couldn't remember which side was
-    the front of the robot) and you will probably need to adjust how long they run for (in seconds).
-
-    Message me on slack if you have issues.
-     */
+    final double INTAKE_DEPOSIT = 0.5;
+    final double INTAKE_OFF = 0.0;
 
     @Override
     public void runOpMode() {
@@ -95,11 +36,8 @@ public class Auto extends LinearOpMode {
         rightBackDrive = hardwareMap.get(DcMotor.class, "Back Right Wheel");
         intake = hardwareMap.get(CRServo.class, "Intake");
         armMotor   = hardwareMap.get(DcMotor.class, "Arm");
+        extensionArm = hardwareMap.get(DcMotor.class,"Extension");
 
-        leftFrontDrive.setDirection(DcMotor.Direction.REVERSE);
-        leftBackDrive.setDirection(DcMotor.Direction.REVERSE);
-        rightFrontDrive.setDirection(DcMotor.Direction.FORWARD);
-        rightBackDrive.setDirection(DcMotor.Direction.FORWARD);
 
 
         /* Send telemetry message to signify robot waiting */
@@ -108,34 +46,59 @@ public class Auto extends LinearOpMode {
 
         /* Wait for the game driver to press play */
         waitForStart();
+
+        leftFrontDrive.setDirection(DcMotor.Direction.REVERSE);
+        leftBackDrive.setDirection(DcMotor.Direction.REVERSE);
+        rightFrontDrive.setDirection(DcMotor.Direction.FORWARD);
+        rightBackDrive.setDirection(DcMotor.Direction.FORWARD);
+
+
+        // Drive for 2 Seconds
+        while (opModeIsActive() && (runtime.seconds() < 1.0)) {
+            leftFrontDrive.setPower(FORWARD_SPEED);
+            leftBackDrive.setPower(FORWARD_SPEED);
+            rightBackDrive.setPower(FORWARD_SPEED);
+            rightFrontDrive.setPower(FORWARD_SPEED);
+            telemetry.addData("Path", "Leg 1: %4.1f S Elapsed", runtime.seconds());
+            telemetry.update();
+        }
+        leftFrontDrive.setPower(0);
+        leftBackDrive.setPower(0);
+        rightBackDrive.setPower(0);
+        rightFrontDrive.setPower(0);
+        runtime.reset();
+        // Move the Arm motor
+        armMotor.setDirection(DcMotor.Direction.REVERSE);
+
+        while (opModeIsActive() && (runtime.seconds() < 4.5)) {
+            armMotor.setPower(0.4);
+            telemetry.addData("Path", "Leg 1: %4.1f S Elapsed", runtime.seconds());
+            telemetry.update();
+        }
+        armMotor.setPower(0);
+        runtime.reset();
+        // Extend the arm
+        extensionArm.setDirection(DcMotor.Direction.REVERSE);
+        while (opModeIsActive() && (runtime.seconds() < 3.0)) {
+            extensionArm.setPower(0.4);
+            telemetry.addData("Path", "Leg 1: %4.1f S Elapsed", runtime.seconds());
+            telemetry.update();
+
+
+        }
+        extensionArm.setPower(0);
         runtime.reset();
 
-        //Step 1: move arm
-        ((DcMotorEx) armMotor).setVelocity(2100);
-        armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-        //Step 2: drive forward for a little bit to make it into the net zone
-        // I have no idea how long this will take or how fast it will be so please test this on a
-        // field
-
-        drive(-1, 0, 0, 0.5);
-
-        //Step 3: score (spin the intake wheel)
-        score();
-
-        /* Step 4:  Drive backward into the observation zone.
-        I have no idea how long this will take or how fast it will be so please test this on a field.
-        Depending on where the other robot ends up being placed, this may run into them, so you
-        may need to last minute comment out this section and redeploy.
-        This is not a very elegant solution but we can work on it in the future */
-
-        drive(1, 0, 0, 3);
-
-        // Step 4: stop
-        stopDrive();
-
+        while (opModeIsActive() && (runtime.seconds() < 2.0)) {
+            intake.setPower(INTAKE_DEPOSIT);
+            telemetry.addData("Path", "Leg 1: %4.1f S Elapsed", runtime.seconds());
+            telemetry.update();
+        }
+        intake.setPower(INTAKE_OFF);
+        runtime.reset();
         telemetry.addData("Path", "Complete");
         telemetry.update();
-        sleep(1000);
+        //System.exit(0);
     }
 }
